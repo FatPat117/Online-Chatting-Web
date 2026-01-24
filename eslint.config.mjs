@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Custom rules to override Next.js warnings
+  {
+    rules: {
+      "@next/next/no-img-element": "off", // Disable img element warning
+    },
+  },
 ]);
 
 export default eslintConfig;
