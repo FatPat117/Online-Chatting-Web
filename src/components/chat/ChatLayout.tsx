@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import type { Layout } from "react-resizable-panels";
+import Sidebar from "../Sidebar";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../ui/resizable";
 
 interface ChatLayoutProps  {
@@ -40,13 +41,13 @@ const ChatLayout = ({defaultLayout=[320,480]}: ChatLayoutProps ) => {
           minSize={isMobile ? "0%" : "8%"} 
           maxSize={isMobile ? "8%" : "30%"} 
           onResize={(panelSize) => {
-            const collapsed = panelSize.asPercentage <= 9;
+            const collapsed = panelSize.asPercentage <= 17;
             // console.log(collapsed);
             setIsCollapsed(collapsed);
             document.cookie = `react-resizable-panels:collapsed=${collapsed}`;
           }}
-          className={`${isCollapsed ? "min-w-[80px]" : "transition-all duration-300 ease-in-out"}`}        >
-            Sidebar
+          className={`${isCollapsed ? "max-w-[80px]" : "transition-all duration-300 ease-in-out"}`}        >
+            <Sidebar isCollapsed={isCollapsed}/>
         </ResizablePanel>
 
     <ResizableHandle withHandle={true}/>
