@@ -22,7 +22,7 @@ const AuthPage = () => {
         </div>
       
         {/* Right part */}
-        <div className="flex-1 relative overflow-hidden justify-center items-center hidden md:flex">
+        <div className="flex-1 relative overflow-hidden justify-center items-center hidden md:flex bg-noise">
             <Image src={'/hero-right.png'} alt='Hero Image' fill className='object-cover dark:opacity-60 opacity-90 pointer-events-none select-none h-full'/>
         </div>
     </div>
