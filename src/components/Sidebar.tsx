@@ -1,8 +1,10 @@
 import { USERS } from "@/db/dummy";
 import { cn } from "@/lib/utils";
+import { usePreferences } from "@/store/usePreferences";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { Tooltip } from "@radix-ui/react-tooltip";
 import { LogOut } from "lucide-react";
+import useSound from "use-sound";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
@@ -14,6 +16,8 @@ interface SidebarProps {
 
 const Sidebar = ({isCollapsed}: SidebarProps) => {
     const selectedUser = USERS[0];
+      const { soundEnabled } = usePreferences()
+    const [playClickSound] = useSound("/sounds/mouse-click.mp3", { volume: 0.4 })
 
   return (
     <div className="relative flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2 max-h-full overflow-auto bg-background group">
@@ -31,7 +35,13 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
                 <TooltipProvider key={idx}>
                         <Tooltip delayDuration={0}>
                             <TooltipTrigger asChild>
-                              <div>
+                              <div
+                                onClick={() => {
+                                  if (soundEnabled) {
+                                    playClickSound()
+                                  }
+                                }}
+                              >
                                     <Avatar className="my-1 flex justify-center items-center size-8" >
                                         <AvatarImage src={user.image || "/user-placeholder.png"} alt="User Profile Image"
                                         referrerPolicy="no-referrer"/>
@@ -47,7 +57,13 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
                         </Tooltip>
                 </TooltipProvider>
                ) : (
-                   <Button key={idx}
+                   <Button
+                    key={idx}
+                    onClick={() => {
+                      if (soundEnabled) {
+                        playClickSound()
+                      }
+                    }}
                    size={'xl'}
                    variant={'grey'}
                    className={cn("w-full justify-start gap-4 my-1",selectedUser.email === user.email && "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white shrink" )}
