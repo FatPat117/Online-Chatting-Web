@@ -1,13 +1,19 @@
 import PreferencesTab from "@/components/PreferencesTab";
 import ChatLayout from "@/components/chat/ChatLayout";
-import { redis } from "@/db/db";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
     const layout = (await cookies()).get('react-resizable-panels:layout');
     const defaultLayout = layout ? JSON.parse(layout.value) : undefined;
 
-   
+     const {isAuthenticated} = getKindeServerSession();
+
+    if(!(await isAuthenticated())) {
+        redirect('/auth');
+    }
+
 
 
   return <main className="flex h-screen flex-col items-center justify-center p-4 md:px-24 py-32 gap-4">

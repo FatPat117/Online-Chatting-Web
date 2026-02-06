@@ -1,6 +1,7 @@
 import { USERS } from "@/db/dummy";
 import { cn } from "@/lib/utils";
 import { usePreferences } from "@/store/usePreferences";
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { Tooltip } from "@radix-ui/react-tooltip";
 import { LogOut } from "lucide-react";
@@ -99,7 +100,10 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
                     <p className="font-bold">Test User</p>
                  </div>)}
                  <div className="flex ">
+                    <LogoutLink>
+
                     <LogOut size={22} cursor={"pointer"}/>
+                    </LogoutLink>
                  </div>
             </div>
         </div>
