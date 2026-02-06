@@ -1,6 +1,7 @@
 'use server'
 
 import { redis } from "@/db/db";
+import { Message } from "@/db/dummy";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
 type sendMessageActionProps={
@@ -52,4 +53,19 @@ export async function sendMessasgeAction({content,messageType,receiverId}:sendMe
 
     return {success:true,conversationId,messageId}
 
+}
+
+
+export async function getMessages(selectedUserId:string,currentUserId:string):Promise<Message[]>{
+    const conversationId = `conversation:${[currentUserId,selectedUserId].sort().join(':')}`;
+    const messagesIds = await redis.zrange(`${conversationId}:messages`,0,-1);
+
+    if(messagesIds.length === 0) return [];
+
+    const pipeline = redis.pipeline();
+    messagesIds.forEach((messageId) => pipeline.hgetall(messageId as string));
+
+    const messages = await pipeline.exec() as Message[];
+
+    return messages as Message[]
 }

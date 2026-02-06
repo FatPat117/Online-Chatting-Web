@@ -113,8 +113,9 @@ const ChatBottomBar = () => {
                   className="size-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white shrink-0"
                   variant={'ghost'}
                   size={'icon'}
+                  onClick={handleThumbsUp}
                 >
-                 {!isPending &&  <ThumbsUp size={20} className="text-muted-foreground" onClick={handleThumbsUp} />}
+                 {!isPending &&  <ThumbsUp size={20} className="text-muted-foreground"  />}
                 {isPending &&  <Loader size={20} className="animate-spin" />}
                 </Button>
               )

@@ -1,16 +1,44 @@
-import { USERS, messages } from "@/db/dummy";
+import { getMessages } from "@/actions/message.action";
+import type { Message } from "@/db/dummy";
 import { cn } from "@/lib/utils";
+import { useSelectedUser } from "@/store/useSelectedUser";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import MessageSkeleton from "../skeletons/MessageSkeleton";
 import { Avatar, AvatarImage } from "../ui/avatar";
 
 const MessageList = () => {
-    const selectedUser = USERS[0];
-    const currentUser = USERS[1];
+  const { selectedUser } = useSelectedUser();
+  const { user: currentUser, isLoading: isUserLoading } = useKindeBrowserClient();
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    data: messages = [],isLoading:isMessagesLoding
+  } = useQuery<Message[]>({
+    queryKey: ["messages", selectedUser?.id],
+    queryFn: async () => {
+      if (selectedUser && currentUser) {
+        return await getMessages(selectedUser.id, currentUser.id);
+      }
+      return [];
+    },
+    enabled: !!selectedUser && !!currentUser && !isUserLoading,
+  });
+
+  useEffect(() => {
+    // Auto-scroll to the last message whenever the list changes
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, selectedUser?.id]);
+
+ 
+
   return (
-    <div className="w-full overflow-y-auto overflow-x-hidden h-full flex flex-col">
+    <div className="flex-1 w-full flex flex-col overflow-x-hidden pb-2">
         {/* This component ensure that an animation is applied when items are added to or removed from the list  */}
       <AnimatePresence>
-        {messages.map((message,index) => (
+        {!isMessagesLoding && messages.map((message,index) => (
             <motion.div key={index} layout
             initial={{opacity:0, scale:1, y:50,x:0}}
             animate={{opacity:1,scale:1,y:0,x:0}}
@@ -27,15 +55,15 @@ const MessageList = () => {
                 originX:0.5,
                 originY:0.5,
             }}
-            className={cn("flex flex-col gap-2 p-4 whitespace-pre-wrap" , message.senderId === currentUser.id ? "items-end" : "items-start")
+            className={cn("flex flex-col gap-2 p-4 whitespace-pre-wrap" , message.senderId === currentUser?.id ? "items-end" : "items-start")
                 
             }
             >
                 <div className="flex gap-3 items-center">
-                    {message.senderId === selectedUser.id && (
+                    {message.senderId === selectedUser?.id && (
                         <Avatar className="flex justify-center items-center">
                             <AvatarImage 
-                            src={selectedUser.image || '/user-placeholder.png'}
+                            src={selectedUser?.image || '/user-placeholder.png'}
                             alt="User Profile Image"
                              className="border-2 border-white rounded-full"
                             />
@@ -46,10 +74,10 @@ const MessageList = () => {
                     ):(<img src={message.content} alt="Message Image"
                     className="border -p2 rounded h-40 md:h-52 object-cover"/>)}
 
-                    {message.senderId === currentUser.id && (
+                    {message.senderId === currentUser?.id && (
                         <Avatar className="flex justify-center items-center">
                             <AvatarImage 
-                            src={currentUser.image || '/user-placeholder.png'}
+                            src={currentUser?.picture || '/user-placeholder.png'}
                             alt="User Profile Image"
                              className="border-2 border-white rounded-full"
                             />
@@ -59,7 +87,9 @@ const MessageList = () => {
 
             </motion.div>
         ))}
+        {isMessagesLoding && <MessageSkeleton/>}
       </AnimatePresence>
+      <div ref={bottomRef} />
     </div>
   )
 }
