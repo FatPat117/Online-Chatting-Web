@@ -1,3 +1,4 @@
+import TanStackProvider from "@/components/providers/TanStackProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -34,7 +35,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+           <TanStackProvider>
+             {children}
+           </TanStackProvider>
           </ThemeProvider>
       </body>
     </html>
