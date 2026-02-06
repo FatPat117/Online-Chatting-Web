@@ -1,6 +1,8 @@
-import { USERS } from "@/db/dummy";
+import { User } from "@/db/dummy";
 import { cn } from "@/lib/utils";
 import { usePreferences } from "@/store/usePreferences";
+import { useSelectedUser } from "@/store/useSelectedUser";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { Tooltip } from "@radix-ui/react-tooltip";
@@ -10,18 +12,20 @@ import { Avatar, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-
 interface SidebarProps {
     isCollapsed: boolean;
+    users:User[];
 }
 
-const Sidebar = ({isCollapsed}: SidebarProps) => {
-    const selectedUser = USERS[0];
-      const { soundEnabled } = usePreferences()
+const Sidebar = ({isCollapsed,users}: SidebarProps) => {
+    const {selectedUser,setSelectedUser} = useSelectedUser()
+    const { soundEnabled } = usePreferences()
     const [playClickSound] = useSound("/sounds/mouse-click.mp3", { volume: 0.4 })
 
+    const {user} = useKindeBrowserClient()
+ 
   return (
-    <div className="relative flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2 max-h-full overflow-auto bg-background group">
+    <div className="relative flex flex-col  h-full gap-4 p-2 data-[collapsed=true]:p-2 max-h-full overflow-auto bg-background group">
       {!isCollapsed && 
       (<div className="flex justify-between p-2 items-center">
         <div className="flex gap-2 items-center text-2xl">
@@ -31,7 +35,7 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
 
         {/* Scroll area */}
         <ScrollArea className='gap-2 px-2 group-data-[collapsed=true]:justify-center group-data-[collapsed=true]:px-2'>
-            {USERS.map((user,idx) => (
+            {users.map((user,idx) => (
                isCollapsed ? (
                 <TooltipProvider key={idx}>
                         <Tooltip delayDuration={0}>
@@ -41,6 +45,7 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
                                   if (soundEnabled) {
                                     playClickSound()
                                   }
+                                  setSelectedUser(user)
                                 }}
                               >
                                     <Avatar className="my-1 flex justify-center items-center size-8" >
@@ -64,10 +69,11 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
                       if (soundEnabled) {
                         playClickSound()
                       }
+                      setSelectedUser(user)
                     }}
                    size={'xl'}
                    variant={'grey'}
-                   className={cn("w-full justify-start gap-4 my-1",selectedUser.email === user.email && "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white shrink" )}
+                   className={cn("w-full justify-start gap-4 my-1",selectedUser?.email === user.email && "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white shrink" )}
              >
                 <Avatar className="flex items-center justify-center">
                     <AvatarImage src={user.image || "/user-placeholder.png"}
@@ -91,13 +97,13 @@ const Sidebar = ({isCollapsed}: SidebarProps) => {
                  (<div className="flex justify-between items-center gap-2 md:px-6 py-2">
                     <Avatar className="flex justify-center items-center">
                         <AvatarImage
-                            src={"/user-placeholder.png"}
-                            alt="Avatar"
+                            src={user?.picture || "/user-placeholder.png"}
+                            alt={user?.given_name || "User Profile Image"}
                             referrerPolicy="no-referrer"
                             className="size-8 border-2 border-white rounded-full"
                         />
                     </Avatar>
-                    <p className="font-bold">Test User</p>
+                    <p className="font-bold">{user?.given_name} {user?.family_name}</p>
                  </div>)}
                  <div className="flex ">
                     <LogoutLink>
