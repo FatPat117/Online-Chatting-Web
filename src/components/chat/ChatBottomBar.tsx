@@ -1,4 +1,7 @@
 'use client'
+import { sendMessasgeAction } from "@/actions/message.action"
+import { useSelectedUser } from "@/store/useSelectedUser"
+import { useMutation } from "@tanstack/react-query"
 import { AnimatePresence, motion } from "framer-motion"
 import { ImageIcon, Loader, SendHorizontal, ThumbsUp } from "lucide-react"
 import { useRef, useState } from "react"
@@ -8,9 +11,9 @@ import { Textarea } from "../ui/textarea"
 import EmojiPicker from "./EmojiPicker"
 
 const ChatBottomBar = () => {
+    const {selectedUser} = useSelectedUser()
     const [message,setMessage] = useState('')
     const inputRef = useRef<HTMLTextAreaElement>(null)
-    const isPending = false;
     const [playSound1] = useSound("/sounds/keystroke1.mp3")
     const [playSound2] = useSound("/sounds/keystroke2.mp3")    
     const [playSound3] = useSound("/sounds/keystroke3.mp3")    
@@ -24,6 +27,33 @@ const ChatBottomBar = () => {
         }
     }
 
+    const {mutate:sendMessage,isPending} = useMutation({
+        mutationFn: sendMessasgeAction
+    })
+
+    const handleSendMessage = () =>{
+        if(!message.trim()) return;
+        sendMessage({content:message,messageType:'text',receiverId:selectedUser?.id as string})
+        setMessage('');
+        inputRef?.current?.focus();
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) =>{
+        if(e.key === 'Enter' && !e.shiftKey){
+            e.preventDefault();
+            handleSendMessage();
+        }
+
+        if(e.key ==="Enter" && e.shiftKey){
+            e.preventDefault();
+            setMessage((prev) => prev + '\n')
+            inputRef?.current?.focus();
+        }
+    }
+
+    const handleThumbsUp = () =>{
+        sendMessage({content:'👍',messageType:'text',receiverId:selectedUser?.id as string})
+    }
 
   return (
     <div className="p-2 flex justify-between w-full items-center gap-2">
@@ -52,6 +82,7 @@ const ChatBottomBar = () => {
             rows={1}
             className="w-full border rounded-full flex items-center h-9 resize-none overflow-hidden bg-background min-h-0"
             value={message}
+            onKeyDown={handleKeyDown}
             onChange={(e) => {setMessage(e.target.value);playRandomKeyStroke()}}
             />
 
@@ -72,8 +103,9 @@ const ChatBottomBar = () => {
                   className="size-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white shrink-0"
                   variant={'ghost'}
                   size={'icon'}
+                  onClick={handleSendMessage}
                 >
-                  <SendHorizontal size={20} className="text-muted-foreground" />
+                  <SendHorizontal size={20} className="text-muted-foreground"  />
                 </Button>
               ) : (
                 <Button
@@ -82,7 +114,7 @@ const ChatBottomBar = () => {
                   variant={'ghost'}
                   size={'icon'}
                 >
-                 {!isPending &&  <ThumbsUp size={20} className="text-muted-foreground" />}
+                 {!isPending &&  <ThumbsUp size={20} className="text-muted-foreground" onClick={handleThumbsUp} />}
                 {isPending &&  <Loader size={20} className="animate-spin" />}
                 </Button>
               )
